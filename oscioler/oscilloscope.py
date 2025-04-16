@@ -32,7 +32,7 @@ class Oscilloscope:
         data = self.instr.read_raw()
         
     def read_data(self, channel: int = "1"):
-        self.instr.write(f":DATa:SOUrche CH{channel}")
+        self.instr.write(f":DATa:SOUrce CH{channel}")
         self.instr.write(f":DATa:START {1}")
         self.instr.write(f":DATa:STOP {4096}")
         self.instr.write(f":WFMOutpre:ENCdg {'ASCii'}")
