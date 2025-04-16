@@ -1,9 +1,10 @@
 import serial
 
+
 # SLIDE CONTROLLER
 class SlideController:
     def __init__(self, com: str, step_size: float = 2e-6):
-        self.ser = serial.Serial(baudrate = 9600, port = com, timeout = 3)
+        self.ser = serial.Serial(baudrate=9600, port=com, timeout=3)
         self.step_size = step_size
         print(f"Serial connection state: {self.ser.is_open}")
 
@@ -46,7 +47,7 @@ class SlideController:
                 return None
 
     def relative_move(self, distance: float, axis: str = "1"):
-        pulses = int(distance/self.step_size)
+        pulses = int(distance / self.step_size)
         command = f"M:{axis}{'-' if pulses < 0 else '+'}P{abs(pulses)}"
         ret = self._command(command)
         match ret:
@@ -61,7 +62,7 @@ class SlideController:
                 return None
 
     def absolute_move(self, distance: int, axis: str = "1"):
-        pulses = int(distance/self.step_size)
+        pulses = int(distance / self.step_size)
         command = f"A:{axis}{'-' if pulses < 0 else '+'}P{abs(pulses)}"
         ret = self._command(command)
         match ret:
