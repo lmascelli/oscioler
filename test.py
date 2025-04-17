@@ -2,6 +2,7 @@ import oscioler
 import time
 import numpy as np
 from scipy.signal import find_peaks
+import matplotlib.pyplot as plt
 
 def test_slide_controller(device):
     slide_controller = oscioler.SlideController(device)
@@ -44,6 +45,8 @@ if __name__ == '__main__':
     step = 1e-4 # 0.1 mm
     start_distance = 1.4 e-2
     n_steps = int(start_distance / step)
+
+    # Move the transdure and record the data
     for i in range(n_steps):
         slide_controller.relative_move(-i*step)
         slide_controller.move()
@@ -53,3 +56,10 @@ if __name__ == '__main__':
         peak_distance = 1e-6/delta_t
         peaks = find_peaks(-data, distance=int(0.99*peak_distance), prominence=3*data_std)
         result.append(np.mean(peaks))
+
+    distances = [(15e-3 - i*step) for i in range(n_steps)]
+    pressures = [52./v for v in result]
+    plt.plot(distances, result)
+    plt.xlabel("Distance from surface (cm)")
+    plt.ylabel("Pressure (MPa)")
+    plt.show()
