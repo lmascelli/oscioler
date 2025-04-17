@@ -49,6 +49,7 @@ class Oscilloscope:
         self.instr.query(":WFMOutpre?")
         self.instr.write(f":HEADer {0}")
         self.instr.write(f":VERBose {0}")
+        x_scale = float(self.instr.query(":WFMOutpre:XMult?"))
         v_scale = float(self.instr.query(":WFMOutpre:YMUlt?"))
         data_string = self.instr.query(":CURVe?")
         data_string = data_string[data_string.find(",") + 1 :]
@@ -56,7 +57,7 @@ class Oscilloscope:
         reader = csv.reader(data_string_io)
         numbers = [int(num) * v_scale for row in reader for num in row]
 
-        return numbers
+        return numbers, x_scale
 
     def acquire_params(self) -> str:
         return self.instr.query("ACQuire?")

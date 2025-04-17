@@ -1,5 +1,7 @@
 import oscioler
 import time
+import numpy as np
+from scipy.signal import find_peaks
 
 def test_slide_controller(device):
     slide_controller = oscioler.SlideController(device)
@@ -22,10 +24,32 @@ def test_oscilloscope(address):
     oscioler.Oscilloscope.list_resources()
     oscilloscope = oscioler.Oscilloscope(address)
     oscilloscope.idn()
-    # # print(oscilloscope.save_image(""))
-    # # print(oscilloscope.read_data(1))
-    # print(oscilloscope.acquire_params())
+    data = oscilloscope.read_data(end=1_000_000)
 
+    
 if __name__ == '__main__':
     # test_slide_controller("/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AB0PWJ79-if00-port0")
-    test_oscilloscope("10.186.24.126")
+    # test_oscilloscope("10.186.24.126")
+
+    # Initialize resources
+    DEVICE = ""
+    ADDRESS = ""
+    slide_controller = oscioler.SlideController(DEVICE)
+    oscilloscope = oscioler.Oscilloscope(ADDRESS)
+    
+    result = []
+
+    # Manually set the transducer at the start position (1.5 cm)
+
+    step = 1e-4 # 0.1 mm
+    start_distance = 1.4 e-2
+    n_steps = int(start_distance / step)
+    for i in range(n_steps):
+        slide_controller.relative_move(-i*step)
+        slide_controller.move()
+        data, delta_t = oscilloscope.read_data(end=1_000_000)
+        data = np.array(data)
+        data_std = np.std(data)
+        peak_distance = 1e-6/delta_t
+        peaks = find_peaks(-data, distance=int(0.99*peak_distance), prominence=3*data_std)
+        result.append(np.mean(peaks))
