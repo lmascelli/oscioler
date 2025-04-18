@@ -25,7 +25,15 @@ def test_oscilloscope(address):
     oscioler.Oscilloscope.list_resources()
     oscilloscope = oscioler.Oscilloscope(address)
     oscilloscope.idn()
-    data = oscilloscope.read_data(end=1_000_000)
+    data, delta_t = oscilloscope.read_data(end=1_000_000)
+    data = np.array(data)
+    data_std = np.std(data)
+    peak_distance = 1e-1/delta_t
+    peaks = find_peaks(-data, distance=int(0.95*peak_distance))
+
+    plt.plot(data)
+    plt.scatter(peaks[0], data[peaks[0]], color="red")
+    plt.show()
 
     
 if __name__ == '__main__':
