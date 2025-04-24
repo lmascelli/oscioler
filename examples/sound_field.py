@@ -30,10 +30,11 @@ def measure(
     slide_initial_distance: float,
     step: float,
     n_steps: int,
+    num_of_trials: int,
 ) -> List[float]:
     oscilloscope = oscioler.Oscilloscope(oscilloscope_address)
     slide_controller = oscioler.SlideController(slide_address)
-    pressures = []
+    pressures = [[] for i in range(num_of_trials)]
 
     print("""
 The slide is going to be moved until the bottom of the rail.
@@ -89,7 +90,8 @@ if __name__ == "__main__":
     start_distance = 2e-2
     step = 0.2e-3
     n_steps = 75
-    pressures = measure("COM2", "", 3.7e-2, step, n_steps)
+    num_of_trials = 30
+    pressures = measure("COM2", "", 3.7e-2, step, n_steps, num_of_trials)
     distances = [20e-3 - step * i for i in range(n_steps)]
 
     rows = zip(distances, pressures)
