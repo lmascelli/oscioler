@@ -25,7 +25,7 @@ class Oscilloscope:
             return None
 
     def idn(self):
-        print(f"[INFO]: Found instrument data:\n{self.instr.query("*IDN?")}")
+        print(f"[INFO]: Found instrument data:\n{self.instr.query('*IDN?')}")
 
     def save_image(self, file: str):
         self.instr.write("SAVE:IMAG:FILEF PNG")
@@ -49,7 +49,7 @@ class Oscilloscope:
         self.instr.query(":WFMOutpre?")
         self.instr.write(f":HEADer {0}")
         self.instr.write(f":VERBose {0}")
-        print(f"[INFO]: Time scale unit is: {self.instr.query(":WFMOutpre:XUNit?")}")
+        print(f"[INFO]: Time scale unit is: {self.instr.query(':WFMOutpre:XUNit?')}")
         x_scale = float(self.instr.query(":WFMOutpre:XINcr?"))
         v_scale = float(self.instr.query(":WFMOutpre:YMUlt?"))
         data_string = self.instr.query(":CURVe?")
