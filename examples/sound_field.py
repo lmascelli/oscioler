@@ -72,9 +72,11 @@ The measure is going to start.
                 -data, distance=num_of_samples_between_peaks, prominence=np.std(data)
             )[0]
             pressures[trial].append(np.mean(peaks))
-            slide_controller.relative_move(step)
+            slide_controller.relative_move(-step)
             slide_controller.move()
             time.sleep(5)
+        slide_controller.relative_move(step*n_steps)
+        slide_controller.move()
 
     result = []
     for i in range(n_steps):
@@ -88,19 +90,31 @@ The measure is going to start.
 
 if __name__ == "__main__":
     start_distance = 2e-2
-    step = 0.2e-3
-    n_steps = 75
+    end_distance = 1e-3
+    step = 1e-3/20
+    n_steps = int((start_distance - end_distance)/step)
     num_of_trials = 30
     pressures = measure("COM2", "", 3.7e-2, step, n_steps, num_of_trials)
-    distances = [20e-3 - step * i for i in range(n_steps)]
+    distances = [start_distance - step * i for i in range(n_steps)]
 
-    rows = zip(distances, pressures)
-    with open('data.csv', mode='w', newline='') as file:
+    savefile = 'data.csv'
+    with open(savefile, mode='w', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow(['Offset', 'Pressure'])
-        writer.writerows(rows)
+        header = ['Distances'] + [f'Trial{i+1}' for i in range(len(pressures))]
+        writer.writerow(header)
 
-    plt.scatter(distances, pressures)
+        for i in range(len(distances)):
+            row_data = [distances[i]] + [pressures[i] for pressures_trial in pressures]
+            writer.writerow(row_data)
+
+    pressures = np.array(pressures)
+    mean_pressure = np.mean(pressures, axis=0)
+    std_pressure = np.std(pressures, axis=0)
+    plt.scatter(distances, mean_pressures, marker='o', color='blue', label='Mean pressure')
+    plt.errorbar(distances, mean_pressures, yerr=std_pressure, fmt='none', ecolor='red', capsize=5, label="Standard Deviation")
     plt.xlabel("Distance from the surface (m)")
     plt.ylabel("Pressure (MPa)")
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
     plt.show()
