@@ -11,19 +11,19 @@ def current_position(slide_address):
     slide_controller = oscioler.SlideController(slide_address)
     slide_controller.status()
 
-    
+
 def plot_data(filename: str):
     distances = []
     pressures = []
 
-    with open(filename, newline='') as csvfile:
+    with open(filename, newline="") as csvfile:
         reader = csv.reader(csvfile)
         next(reader)
         for row in reader:
             distances.append(float(row[0]))
             pressures.append(float(row[1]))
-            
-            
+
+
 def measure(
     slide_address: str,
     oscilloscope_address: str,
@@ -67,15 +67,15 @@ The measure is going to start.
             print(f"STEP: {i}/{n_steps}")
             values, time_step = oscilloscope.read_data(end=1_000_000)
             data = np.array(values)
-            num_of_samples_between_peaks = int(0.95 * (1e-6 / time_step))
-            peaks = find_peaks(
-                -data, distance=num_of_samples_between_peaks, prominence=np.std(data)
-            )[0]
-            pressures[trial].append(np.mean(peaks))
+            samples_in_a_period = 1e-6 / time_step
+            number_of_samples = int(len(data) / samples_in_a_period)
+            rms = np.sqrt(np.mean(data[0:number_of_samples]) ** 2)
+            pressures[trial].append(rms * np.sqrt(2))
             slide_controller.relative_move(-step)
             slide_controller.move()
             time.sleep(5)
-        slide_controller.relative_move(step*n_steps)
+        input("Press ENTER to start an other trial")
+        slide_controller.relative_move(step * n_steps)
         slide_controller.move()
 
     result = []
@@ -83,24 +83,24 @@ The measure is going to start.
         acc = 0
         for trial in range(num_of_trials):
             acc = acc + pressures[trial][i]
-        result.append(52. / (acc/num_of_trials))
-        
+        result.append(52.0 / (acc / num_of_trials))
+
     return result
 
 
 if __name__ == "__main__":
     start_distance = 2e-2
     end_distance = 1e-3
-    step = 1e-3/20
-    n_steps = int((start_distance - end_distance)/step)
+    step = 1e-3 / 20
+    n_steps = int((start_distance - end_distance) / step)
     num_of_trials = 30
     pressures = measure("COM2", "", 3.7e-2, step, n_steps, num_of_trials)
     distances = [start_distance - step * i for i in range(n_steps)]
 
-    savefile = 'data.csv'
-    with open(savefile, mode='w', newline='') as file:
+    savefile = "data.csv"
+    with open(savefile, mode="w", newline="") as file:
         writer = csv.writer(file)
-        header = ['Distances'] + [f'Trial{i+1}' for i in range(len(pressures))]
+        header = ["Distances"] + [f"Trial{i + 1}" for i in range(len(pressures))]
         writer.writerow(header)
 
         for i in range(len(distances)):
@@ -108,10 +108,20 @@ if __name__ == "__main__":
             writer.writerow(row_data)
 
     pressures = np.array(pressures)
-    mean_pressure = np.mean(pressures, axis=0)
-    std_pressure = np.std(pressures, axis=0)
-    plt.scatter(distances, mean_pressures, marker='o', color='blue', label='Mean pressure')
-    plt.errorbar(distances, mean_pressures, yerr=std_pressure, fmt='none', ecolor='red', capsize=5, label="Standard Deviation")
+    mean_pressures = np.mean(pressures, axis=0)
+    std_pressures = np.std(pressures, axis=0)
+    plt.scatter(
+        distances, mean_pressures, marker="o", color="blue", label="Mean pressure"
+    )
+    plt.errorbar(
+        distances,
+        mean_pressures,
+        yerr=std_pressures,
+        fmt="none",
+        ecolor="red",
+        capsize=5,
+        label="Standard Deviation",
+    )
     plt.xlabel("Distance from the surface (m)")
     plt.ylabel("Pressure (MPa)")
     plt.grid(True)
