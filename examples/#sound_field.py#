@@ -78,7 +78,7 @@ The measure is going to start.
         slide_controller.relative_move(step * n_steps)
         slide_controller.move()
 
-    return pressures
+    return result
 
 
 if __name__ == "__main__":
@@ -88,7 +88,7 @@ if __name__ == "__main__":
     N_STEPS = int((START_DISTANCE - END_DISTANCE) / STEP)
     NUM_OF_TRIALS = 3
     pressures = measure("COM2", "10.186.24.4", 3.7e-2, STEP, N_STEPS, NUM_OF_TRIALS)
-    distances = [(START_DISTANCE - STEP * i) for i in range(N_STEPS)]
+    distances = [START_DISTANCE - STEP * i for i in range(N_STEPS)]
 
     savefile = "data.csv"
     with open(savefile, mode="w", newline="") as file:

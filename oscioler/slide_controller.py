@@ -3,7 +3,8 @@ import serial
 
 # SLIDE CONTROLLER
 class SlideController:
-    def __init__(self, com: str, step_size: float = 2e-6):
+    def __init__(self, com: str, step_size: float = 2e-6, debug = False):
+        self.debug = debug
         self.ser = serial.Serial(baudrate=9600, port=com, timeout=3)
         self.step_size = step_size
         print(f"Serial connection state: {self.ser.is_open}")
@@ -13,14 +14,16 @@ class SlideController:
 
     def _command(self, cmd: str) -> str:
         command = f"{cmd}\r\n".encode("utf-8")
-        print(f"Sending command: {command}")
+        if self.debug:
+            print(f"Sending command: {command}")
         self.ser.write(command)
         ret = self.ser.readline()
         return ret
 
     def mechanical_origin(self, axis: str = "1"):
         ret = self._command(f"H:{axis}")
-        print(f"Mechanical_Origin: {ret}")
+        if self.debug:
+            print(f"Mechanical_Origin: {ret}")
         match ret:
             case b"OK\r\n":
                 print("Mechanical_Origin: SUCCESS")
@@ -34,7 +37,8 @@ class SlideController:
 
     def jogging(self, axis: str = "1") -> str:
         ret = self._command(f"J:{axis}+")
-        print(f"Jogging: {ret}")
+        if self.debug:
+            print(f"Jogging: {ret}")
         match ret:
             case b"OK\r\n":
                 print("Jogging: SUCCESS")
@@ -67,13 +71,16 @@ class SlideController:
         ret = self._command(command)
         match ret:
             case b"OK\r\n":
-                print(f"Absolute_Move of {pulses} pulses: SUCCESS")
+                if self.debug:                
+                    print(f"Absolute_Move of {pulses} pulses: SUCCESS")
                 return True
             case b"NG\r\n":
-                print(f"Absolute_Move of {pulses} pulses: FAIL")
+                if self.debug:
+                    print(f"Absolute_Move of {pulses} pulses: FAIL")
                 return False
             case _:
-                print(f"Absolute_Move of {pulses} pulses: UNKNOWN RETURN")
+                if self.debug:
+                    print(f"Absolute_Move of {pulses} pulses: UNKNOWN RETURN")
                 return None
 
     def move(self):
