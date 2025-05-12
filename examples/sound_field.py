@@ -65,10 +65,10 @@ The measure is going to start.
     for trial in range(num_of_trials):
         for i in range(n_steps):
             print(f"STEP: {i}/{n_steps}")
-            values, time_step = oscilloscope.read_data(end=1_000_000)
+            values, time_step = oscilloscope.read_data(end=10_000)
             data = np.array(values)
             samples_in_a_period = 1e-6 / time_step
-            number_of_samples = int(len(data) / samples_in_a_period)
+            number_of_samples = int(len(data) / samples_in_a_period) * int(samples_in_a_period)
             rms = np.sqrt(np.mean(data[0:number_of_samples]) ** 2)
             pressures[trial].append(rms * np.sqrt(2))
             slide_controller.relative_move(-step)
@@ -84,9 +84,9 @@ The measure is going to start.
 if __name__ == "__main__":
     START_DISTANCE = 2e-2
     END_DISTANCE = 1e-2
-    STEP = 1e-3 / 1
+    STEP = 1e-3 / 100
     N_STEPS = int((START_DISTANCE - END_DISTANCE) / STEP)
-    NUM_OF_TRIALS = 3
+    NUM_OF_TRIALS = 1
     pressures = measure("COM2", "10.186.24.4", 3.7e-2, STEP, N_STEPS, NUM_OF_TRIALS)
     distances = [(START_DISTANCE - STEP * i) for i in range(N_STEPS)]
 
